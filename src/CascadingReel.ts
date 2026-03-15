@@ -32,6 +32,7 @@ import {
   normalizeInitialSegments,
   normalizeParticleColor,
   normalizeStopGrid,
+  normalizeSymbolScale,
   rowsToStopGrid,
 } from './normalize';
 import { WebGLRenderer } from './render/webglRenderer';
@@ -58,6 +59,7 @@ export class CascadingReel {
   private static readonly PARTICLE_GLOBAL_ALPHA = 0.9;
   private static readonly PARTICLE_MAX_DISTANCE = 0.72;
   private static readonly PARTICLE_BASE_RADIUS = 0.028;
+  private static readonly DEFAULT_SYMBOL_SCALE = 0.9;
 
   private readonly canvas: HTMLCanvasElement;
   private readonly container: HTMLElement;
@@ -68,6 +70,7 @@ export class CascadingReel {
   private readonly highlightInitialWinningCells: boolean;
   private readonly particleColorRgb: [number, number, number];
   private readonly particleColorMode: 'solid' | 'rainbow';
+  private readonly symbolScale: number;
   private readonly motionProfile: MotionProfile;
   private readonly isCoarsePointerDevice: boolean;
 
@@ -149,6 +152,7 @@ export class CascadingReel {
     const particleColor = normalizeParticleColor(config.particleColor);
     this.particleColorRgb = particleColor.rgb;
     this.particleColorMode = particleColor.mode;
+    this.symbolScale = normalizeSymbolScale(config.symbolScale, CascadingReel.DEFAULT_SYMBOL_SCALE);
     this.motionProfile = DEFAULT_MOTION_PROFILE;
     this.isCoarsePointerDevice = CascadingReel.detectCoarsePointerDevice();
     this.mobileDprCap = this.isCoarsePointerDevice ? CascadingReel.MOBILE_DPR_CAP_MAX : 2;
@@ -647,7 +651,18 @@ export class CascadingReel {
         if (y > this.height || y + this.cellH < 0) continue;
         const spriteAlpha = sampler.sampleAlpha(col, row);
         if (spriteAlpha <= 0) continue;
-        renderer.drawSprite(sampler.grid[col][row], x, y, this.cellW, this.cellH, spriteAlpha);
+        const symbolW = this.cellW * this.symbolScale;
+        const symbolH = this.cellH * this.symbolScale;
+        const symbolOffsetX = (this.cellW - symbolW) * 0.5;
+        const symbolOffsetY = (this.cellH - symbolH) * 0.5;
+        renderer.drawSprite(
+          sampler.grid[col][row],
+          x + symbolOffsetX,
+          y + symbolOffsetY,
+          symbolW,
+          symbolH,
+          spriteAlpha,
+        );
       }
     }
   }
@@ -692,8 +707,8 @@ export class CascadingReel {
               this.particleColorRgb[2] / 255,
             ];
 
-      const scaledW = this.cellW * pulse;
-      const scaledH = this.cellH * pulse;
+      const scaledW = this.cellW * this.symbolScale * pulse;
+      const scaledH = this.cellH * this.symbolScale * pulse;
       const offsetX = (this.cellW - scaledW) * 0.5;
       const offsetY = (this.cellH - scaledH) * 0.5;
       renderer.drawSprite(symbol, baseX + offsetX, baseY + offsetY, scaledW, scaledH, 1);

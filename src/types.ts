@@ -16,6 +16,7 @@ export type CascadingReelConfig = {
   button?: HTMLButtonElement;
   sprite?: string;
   spriteElementsCount?: number;
+  symbolScale?: number;
   initialSegments?: number[][];
   highlightInitialWinningCells?: boolean;
   queuedSpinStates?: SpinState[];

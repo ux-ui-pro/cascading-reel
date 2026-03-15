@@ -1,6 +1,6 @@
 import { DEFAULT_PARTICLE_COLOR_RGB, GRID_COLS, GRID_ROWS } from './constants';
 import type { ParticleColor, SpinState, SymbolId } from './types';
-import { normalizeRgbChannel, normalizeSegment } from './utils/math';
+import { clamp, normalizeRgbChannel, normalizeSegment } from './utils/math';
 
 export function normalizeParticleColor(color?: ParticleColor): {
   mode: 'solid' | 'rainbow';
@@ -14,6 +14,11 @@ export function normalizeParticleColor(color?: ParticleColor): {
     mode: 'solid',
     rgb: [normalizeRgbChannel(rgb[0]), normalizeRgbChannel(rgb[1]), normalizeRgbChannel(rgb[2])],
   };
+}
+
+export function normalizeSymbolScale(value: number | undefined, fallback: number): number {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback;
+  return clamp(value, 0.5, 1.2);
 }
 
 export function rowsToStopGrid(rows: number[][]): number[][] {

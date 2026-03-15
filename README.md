@@ -32,6 +32,7 @@ const reel = new CascadingReel({
   button: button as HTMLButtonElement,
   sprite: new URL('./assets/reel.webp', import.meta.url).href,
   spriteElementsCount: 6,
+  symbolScale: 0.85,
   initialSegments: [
     [0, 1, 2],
     [3, 0, 5],
@@ -81,6 +82,7 @@ onMounted(async () => {
     button: buttonRef.value ?? undefined,
     sprite: new URL('./assets/reel.webp', import.meta.url).href,
     spriteElementsCount: 6,
+    symbolScale: 0.85,
     particleColor: 'rainbow',
   });
   await reel.value.init();
@@ -137,6 +139,7 @@ type SpinState = {
 | `button` | `HTMLButtonElement` | — | Optional spin button. |
 | `sprite` | `string` | — | Sprite sheet URL. |
 | `spriteElementsCount` | `number` | `6` | Number of symbols in the sprite sheet. |
+| `symbolScale` | `number` | `0.9` | Symbol scale inside the cell. Clamped to `0.5..1.2`. |
 | `initialSegments` | `number[][]` | randomized | Initial 3x3 state in rows format. |
 | `highlightInitialWinningCells` | `boolean` | `true` | Show initial highlight before first spin. |
 | `queuedSpinStates` | `SpinState[]` | `[]` | Predefined queue consumed by `spin()`. |
