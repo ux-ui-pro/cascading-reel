@@ -31,6 +31,7 @@ const reel = new CascadingReel({
   canvas: canvas as HTMLCanvasElement,
   button: button as HTMLButtonElement,
   sprite: new URL('./assets/reel.webp', import.meta.url).href,
+  spriteCrossOrigin: 'anonymous',
   spriteElementsCount: 6,
   symbolScale: 0.85,
   initialSegments: [
@@ -81,6 +82,7 @@ onMounted(async () => {
     canvas: canvasRef.value,
     button: buttonRef.value ?? undefined,
     sprite: new URL('./assets/reel.webp', import.meta.url).href,
+    spriteCrossOrigin: 'anonymous',
     spriteElementsCount: 6,
     symbolScale: 0.85,
     particleColor: 'rainbow',
@@ -132,18 +134,19 @@ type SpinState = {
 
 ## Options
 
-| Option | Type | Default | Description |
-|:--|:--|:--:|:--|
-| `canvas` | `HTMLCanvasElement` | — | Canvas for rendering. |
-| `container` | `HTMLElement` | — | Element used for responsive sizing. |
-| `button` | `HTMLButtonElement` | — | Optional spin button. |
-| `sprite` | `string` | — | Sprite sheet URL. |
-| `spriteElementsCount` | `number` | `6` | Number of symbols in the sprite sheet. |
-| `symbolScale` | `number` | `0.9` | Symbol scale inside the cell. Clamped to `0.5..1.2`. |
-| `initialSegments` | `number[][]` | randomized | Initial 3x3 state in rows format. |
-| `highlightInitialWinningCells` | `boolean` | `true` | Show initial highlight before first spin. |
-| `queuedSpinStates` | `SpinState[]` | `[]` | Predefined queue consumed by `spin()`. |
-| `particleColor` | `'rainbow' \| [number, number, number]` | `[255, 235, 110]` | Win particle color mode or solid RGB color. |
+| Option                         | Type                                     |     Default       | Description                                            |
+|:-------------------------------|:-----------------------------------------|:-----------------:|:-------------------------------------------------------|
+| `canvas`                       | `HTMLCanvasElement`                      |         —         | Canvas for rendering.                                  |
+| `container`                    | `HTMLElement`                            |         —         | Element used for responsive sizing.                    |
+| `button`                       | `HTMLButtonElement`                      |         —         | Optional spin button.                                  |
+| `sprite`                       | `string \| HTMLImageElement`             |         —         | Sprite sheet URL or preloaded image element.           |
+| `spriteCrossOrigin`            | `'' \| 'anonymous' \| 'use-credentials'` |   `'anonymous'`   | `crossOrigin` mode used when `sprite` is a URL string. |
+| `spriteElementsCount`          | `number`                                 |        `6`        | Number of symbols in the sprite sheet.                 |
+| `symbolScale`                  | `number`                                 |       `0.9`       | Symbol scale inside the cell. Clamped to `0.5..1.2`.   |
+| `initialSegments`              | `number[][]`                             |    randomized     | Initial 3x3 state in rows format.                      |
+| `highlightInitialWinningCells` | `boolean`                                |      `true`       | Show initial highlight before first spin.              |
+| `queuedSpinStates`             | `SpinState[]`                            |       `[]`        | Predefined queue consumed by `spin()`.                 |
+| `particleColor`                | `'rainbow' \| [number, number, number]`  | `[255, 235, 110]` | Win particle color mode or solid RGB color.            |
 
 ## Methods
 
@@ -159,6 +162,7 @@ reel.destroy();
 - Every symbol frame is square.
 - Total texture height equals `spriteElementsCount * frameWidth` (square-frame assumption).
 - `PNG` and `WebP` with transparency are supported.
+- When using a cross-origin sprite URL (CDN/sandbox), keep `spriteCrossOrigin: 'anonymous'` and ensure the host returns CORS headers.
 
 ## License
 

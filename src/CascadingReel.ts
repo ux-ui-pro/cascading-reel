@@ -65,7 +65,8 @@ export class CascadingReel {
   private readonly container: HTMLElement;
   private readonly button?: HTMLButtonElement;
   private readonly spinQueueController: SpinQueueController;
-  private readonly spriteUrl?: string;
+  private readonly spriteSource?: CascadingReelConfig['sprite'];
+  private readonly spriteCrossOrigin: NonNullable<CascadingReelConfig['spriteCrossOrigin']>;
   private readonly spriteElementsCount: number;
   private readonly highlightInitialWinningCells: boolean;
   private readonly particleColorRgb: [number, number, number];
@@ -75,6 +76,7 @@ export class CascadingReel {
   private readonly isCoarsePointerDevice: boolean;
 
   private spriteImage: HTMLImageElement | null = null;
+  private spriteLoadError: string | null = null;
   private webglRenderer: WebGLRenderer | null = null;
   private readonly rafLoop = new RafLoop();
   private readonly runtime = createRuntimeState();
@@ -142,7 +144,8 @@ export class CascadingReel {
     this.canvas = config.canvas;
     this.container = config.container;
     this.button = config.button;
-    this.spriteUrl = config.sprite;
+    this.spriteSource = config.sprite;
+    this.spriteCrossOrigin = config.spriteCrossOrigin ?? 'anonymous';
     this.spriteElementsCount = Math.max(
       1,
       config.spriteElementsCount ?? DEFAULT_SPRITE_ELEMENTS_COUNT,
@@ -166,7 +169,8 @@ export class CascadingReel {
     this.resize();
     await this.loadSpriteIfProvided();
     if (!this.spriteImage) {
-      throw new Error('sprite is required for WebGL renderer');
+      const reason = this.spriteLoadError ? ` (${this.spriteLoadError})` : '';
+      throw new Error(`sprite is required for WebGL renderer${reason}`);
     }
     this.webglRenderer = new WebGLRenderer({
       canvas: this.canvas,
@@ -972,16 +976,46 @@ export class CascadingReel {
   };
 
   private async loadSpriteIfProvided(): Promise<void> {
-    if (!this.spriteUrl) return;
+    if (!this.spriteSource) {
+      this.spriteImage = null;
+      this.spriteLoadError = null;
+      return;
+    }
+
+    if (typeof this.spriteSource !== 'string') {
+      try {
+        await this.decodeSpriteImage(this.spriteSource);
+        this.spriteImage = this.spriteSource;
+        this.spriteLoadError = null;
+      } catch (error) {
+        this.spriteImage = null;
+        this.spriteLoadError = this.toSpriteLoadErrorMessage(error, '[HTMLImageElement]');
+      }
+      return;
+    }
+
     const image = new Image();
     image.decoding = 'async';
-    image.src = this.spriteUrl;
+    image.crossOrigin = this.spriteCrossOrigin;
+    image.src = this.spriteSource;
     try {
-      await image.decode();
+      await this.decodeSpriteImage(image);
       this.spriteImage = image;
-    } catch {
+      this.spriteLoadError = null;
+    } catch (error) {
       this.spriteImage = null;
+      this.spriteLoadError = this.toSpriteLoadErrorMessage(error, this.spriteSource);
     }
+  }
+
+  private async decodeSpriteImage(image: HTMLImageElement): Promise<void> {
+    if (image.complete && image.naturalWidth > 0 && image.naturalHeight > 0) return;
+    await image.decode();
+  }
+
+  private toSpriteLoadErrorMessage(error: unknown, spriteSourceLabel: string): string {
+    const errorText = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    return `failed to load sprite "${spriteSourceLabel}" - ${errorText}`;
   }
 
   private advanceSimulation(now: number): void {

@@ -1,5 +1,7 @@
 export type SymbolId = number;
 export type ParticleColor = 'rainbow' | [number, number, number];
+export type SpriteSource = string | HTMLImageElement;
+export type SpriteCrossOrigin = '' | 'anonymous' | 'use-credentials';
 
 export type SpinState = {
   stopGrid?: number[][];
@@ -14,7 +16,8 @@ export type CascadingReelConfig = {
   canvas: HTMLCanvasElement;
   container: HTMLElement;
   button?: HTMLButtonElement;
-  sprite?: string;
+  sprite?: SpriteSource;
+  spriteCrossOrigin?: SpriteCrossOrigin;
   spriteElementsCount?: number;
   symbolScale?: number;
   initialSegments?: number[][];

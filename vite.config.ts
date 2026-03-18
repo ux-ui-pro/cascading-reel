@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import type { UserConfig } from 'vite';
-import type { ModuleFormat } from 'rollup';
 import dts from 'vite-plugin-dts';
 
 export default defineConfig(({ command }: { command: 'build' | 'serve' }) => {
@@ -21,8 +20,11 @@ export default defineConfig(({ command }: { command: 'build' | 'serve' }) => {
         entry: 'src/index.ts',
         name: 'CascadingReel',
         formats: ['es', 'cjs', 'umd'],
-        fileName: (format: ModuleFormat) =>
-          format === 'umd' ? 'index.umd.js' : `index.${format}.js`,
+        fileName: (format) => {
+          if (format === 'umd') return 'index.umd.js';
+          if (format === 'cjs') return 'index.cjs.js';
+          return 'index.es.js';
+        },
       },
       emptyOutDir: true,
       sourcemap: true,
